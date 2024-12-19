@@ -111,7 +111,10 @@ app.get("/", async (c) => {
             const text = `${key} の卒論の進捗は ${page} です．\nhttps://sotsuron.yokohama.dev`;
             return (
               <div key={key}>
-                <h3>{key}</h3>
+                <h3>
+                  {key}
+                  {value.twitter && `（${value.twitter}）`}
+                </h3>
                 <ul>
                   <li>
                     現在の進捗：

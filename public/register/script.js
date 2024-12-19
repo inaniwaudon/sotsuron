@@ -1,28 +1,16 @@
-let registerSection;
-let alreadySection;
-let tokenSection;
-let updateSection;
-let nextSection;
-
-let registerInput = {};
-let updateInput = {};
-let registerButton;
-let updateButton;
-
+const section = {};
+const registerInput = {};
+const updateInput = {};
+const spans = {};
 let tokenInput;
-
-let idSpans;
-let progressUrls;
-let tokenSpans;
-
 let accountInfo = null;
 
 window.onload = () => {
-  registerSection = document.querySelector("#register");
-  alreadySection = document.querySelector("#already");
-  tokenSection = document.querySelector("#token");
-  updateSection = document.querySelector("#update");
-  nextSection = document.querySelector("#next");
+  section.register = document.querySelector("#register");
+  section.signin = document.querySelector("#signin");
+  section.token = document.querySelector("#token");
+  section.update = document.querySelector("#update");
+  section.next = document.querySelector("#next");
 
   registerInput.id = document.querySelector("#register-id-input");
   registerInput.twitter = document.querySelector("#register-twitter-input");
@@ -33,14 +21,11 @@ window.onload = () => {
   updateInput.goal = document.querySelector("#update-goal-input");
   updateInput.comment = document.querySelector("#update-comment-input");
 
+  spans.id = document.querySelectorAll(".id");
+  spans.progressUrl = document.querySelectorAll(".progress-url");
+  spans.token = document.querySelectorAll(".token");
+
   tokenInput = document.querySelector("#token-input");
-
-  registerButton = document.querySelector("#register-button");
-  updateButton = document.querySelector("#update-button");
-
-  idSpans = document.querySelectorAll(".id");
-  progressUrls = document.querySelectorAll(".progress-url");
-  tokenSpans = document.querySelectorAll(".token");
 
   const token = localStorage.getItem("token");
   if (token) {
@@ -50,8 +35,8 @@ window.onload = () => {
 
 const setRegistered = (token) => {
   (async () => {
+    // アカウント情報を取得
     let result;
-
     try {
       result = await fetch(`/api/accounts/me`, {
         method: "POST",
@@ -70,22 +55,27 @@ const setRegistered = (token) => {
       alert(json.message);
     }
 
+    // 表示を更新
+    updateInput.twitter.value = accountInfo.twitter;
+    updateInput.goal.value = accountInfo.goal;
+    updateInput.comment.value = accountInfo.comment;
+
     const url = encodeURI(
       `https://sotsuron.yokohama.dev/api/progress?token=${token}&pages=$pages`
     );
-    registerSection.style.display = "none";
-    alreadySection.style.display = "none";
-    tokenSection.style.display = "block";
-    nextSection.style.display = "block";
+    section.register.style.display = "none";
+    section.signin.style.display = "none";
+    section.token.style.display = "block";
+    section.next.style.display = "block";
 
-    for (const idSpan of idSpans) {
+    for (const idSpan of spans.id) {
       idSpan.innerHTML = accountInfo.id;
     }
-    for (const progressUrl of progressUrls) {
+    for (const progressUrl of spans.progressUrl) {
       progressUrl.href = url;
       progressUrl.innerHTML = url;
     }
-    for (const tokenSpan of tokenSpans) {
+    for (const tokenSpan of spans.token) {
       tokenSpan.innerHTML = escapeHtml(token);
     }
   })();
@@ -110,20 +100,18 @@ const escapeHtml = (string) => {
 function register() {
   (async () => {
     let result;
-    const body = {
-      id: registerInput.id.value,
-      twitter: registerInput.twitter.value,
-      goal: parseInt(registerInput.goal.value),
-      comment: registerInput.comment.value,
-    };
-
     try {
       result = await fetch(`/api/accounts`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(body),
+        body: JSON.stringify({
+          id: registerInput.id.value,
+          twitter: registerInput.twitter.value,
+          goal: parseInt(registerInput.goal.value),
+          comment: registerInput.comment.value,
+        }),
       });
       if (!result.ok) {
         throw new Error();
@@ -139,31 +127,8 @@ function register() {
 }
 
 function signin() {
-  (async () => {
-    let result;
-    const body = {
-      token: tokenInput.value,
-    };
-
-    try {
-      result = await fetch(`/api/accounts/me`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(body),
-      });
-      if (!result.ok) {
-        throw new Error();
-      }
-      const json = await result.json();
-      localStorage.setItem("token", json.token);
-      location.reload();
-    } catch (e) {
-      const json = await result.json();
-      alert(json.message);
-    }
-  })();
+  localStorage.setItem("token", tokenInput.value);
+  location.reload();
 }
 
 function signout() {
@@ -174,21 +139,19 @@ function signout() {
 function update() {
   (async () => {
     let result;
-    const body = {
-      id: accountInfo.id,
-      twitter: updateInput.twitter.value,
-      goal: parseInt(updateInput.goal.value),
-      comment: updateInput.comment.value,
-      token: accountInfo.token,
-    };
-
     try {
       result = await fetch(`/api/accounts`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(body),
+        body: JSON.stringify({
+          id: accountInfo.id,
+          twitter: updateInput.twitter.value,
+          goal: parseInt(updateInput.goal.value),
+          comment: updateInput.comment.value,
+          token: accountInfo.token,
+        }),
       });
       if (!result.ok) {
         throw new Error();
@@ -209,18 +172,16 @@ function deleteAccount() {
       return;
     }
     let result;
-    const body = {
-      id: accountInfo.id,
-      token: accountInfo.token,
-    };
-
     try {
       result = await fetch(`/api/accounts`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(body),
+        body: JSON.stringify({
+          id: accountInfo.id,
+          token: accountInfo.token,
+        }),
       });
       if (!result.ok) {
         throw new Error();
@@ -236,5 +197,5 @@ function deleteAccount() {
 }
 
 function displayUpdateSection() {
-  updateSection.style.display = "block";
+  section.update.style.display = "block";
 }
