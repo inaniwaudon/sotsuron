@@ -31,6 +31,8 @@ app.post("/accounts", zValidator("json", registerJsonSchema), async (c) => {
         400
       );
     }
+
+    // ID の重複を検証
     const userReulst = await qb
       .fetchOne<{ id: string }>({
         tableName: "user",
@@ -45,9 +47,8 @@ app.post("/accounts", zValidator("json", registerJsonSchema), async (c) => {
       return c.json({ message: "指定された ID は既に使用されています．" }, 400);
     }
 
-    const token = generateToken();
-
     // 行を挿入
+    const token = generateToken();
     const data: Record<string, any> = {
       id,
       twitter,
@@ -61,9 +62,46 @@ app.post("/accounts", zValidator("json", registerJsonSchema), async (c) => {
         data,
       })
       .execute();
-    return c.json({ id, token }, 201);
+    return c.json(data, 201);
   } catch {
     return c.json({ message: "アカウントの作成に失敗しました．" }, 500);
+  }
+});
+
+const updateJsonSchema = z.object({
+  id: z.string(),
+  twitter: z.string().optional(),
+  goal: z.number().int(),
+  comment: z.string().optional(),
+  token: z.string(),
+});
+
+app.put("/accounts", zValidator("json", updateJsonSchema), async (c) => {
+  const { id, twitter, goal, comment, token } = c.req.valid("json");
+
+  const qb = new D1QB(c.env.DB);
+  try {
+    const data: Record<string, any> = {
+      twitter,
+      goal,
+      comment,
+    };
+    const { changes } = await qb
+      .update<User>({
+        tableName: "user",
+        where: {
+          conditions: "id = ?1 AND token = ?2",
+          params: [id, token],
+        },
+        data,
+      })
+      .execute();
+    if (!changes) {
+      return c.json({ message: "トークンが無効です．" }, 401);
+    }
+    return c.json({ id }, 200);
+  } catch {
+    return c.json({ message: "アカウントの更新に失敗しました．" }, 500);
   }
 });
 
@@ -94,18 +132,24 @@ app.delete("/accounts", zValidator("json", deleteJsonSchema), async (c) => {
   }
 });
 
-const checkJsonSchema = z.object({
+const meJsonSchema = z.object({
   token: z.string(),
 });
 
-app.post("/check", zValidator("json", checkJsonSchema), async (c) => {
+app.post("/accounts/me", zValidator("json", meJsonSchema), async (c) => {
   const { token } = c.req.valid("json");
   const qb = new D1QB(c.env.DB);
   try {
     const { results } = await qb
-      .fetchOne<{ id: string }>({
+      .fetchOne<{
+        id: string;
+        twitter?: string;
+        goal: number;
+        comment?: string;
+        token?: string;
+      }>({
         tableName: "user",
-        fields: ["id"],
+        fields: ["id", "twitter", "goal", "comment", "token"],
         where: {
           conditions: "token = ?1",
           params: [token],
@@ -115,7 +159,7 @@ app.post("/check", zValidator("json", checkJsonSchema), async (c) => {
     if (!results) {
       return c.json({ message: "トークンが無効です．" }, 401);
     }
-    return c.json({ id: results.id, token });
+    return c.json(results);
   } catch {
     return c.json({ message: "トークンの検証に失敗しました．" }, 500);
   }
@@ -160,8 +204,7 @@ app.post("/progress", zValidator("query", progressQuerySchema), async (c) => {
       `進捗を更新しました！\n現在の進捗は ${pages} ページです．\n`,
       201
     );
-  } catch (e) {
-    console.log(e);
+  } catch {
     return c.text("進捗の更新に失敗しました．\n", 500);
   }
 });

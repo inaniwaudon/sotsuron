@@ -10,6 +10,12 @@
         border: solid 1px red;
         display: none;
       }
+      #update {
+        margin: 16px 0;
+        padding: 8px 16px;
+        border: solid 1px blue;
+        display: none;
+      }
       #register-form {
         margin: 16px 0;
         padding: 8px 16px;
@@ -53,19 +59,19 @@
         <fieldset id="register-form">
           <div class="form">
             ID（4–16 文字の半角英数字，ひらがな，カタカナ．イミュータブル）<br/>
-            <input type="text" id="id-input" />
+            <input type="text" id="register-id-input" />
           </div>
           <div class="form">
             Twitter アカウント（あれば）<br/>
-            <input type="text" id="twitter-input" />
+            <input type="text" id="register-twitter-input" />
           </div>
           <div class="form">
             卒論の目標<br/>
-            <input type="number" id="goal-input" value="40"/> ページ
+            <input type="number" id="register-goal-input" value="40"/> ページ
           </div>
           <div class="form">
             ひとこと ／ 終わったらやりたいこと<br/>
-            <textarea type="text" id="comment-input" cols="30" rows="3"></textarea>
+            <textarea type="text" id="register-comment-input" cols="30" rows="3"></textarea>
           </div>
           <div class="form">
             <button onclick="register()" id="register-button">
@@ -86,6 +92,7 @@
         <p>
           あなたのアカウントは以下の通りです．
           <button onclick="signout()">サインアウト</button>
+          <button onclick="displayUpdateSection()">情報を変更</button>
           <button onclick="deleteAccount()">アカウントを削除</button>
         </p>
         <ul>
@@ -97,6 +104,27 @@
           <b>※トークンおよび URL は公開しないでください．</b><br/>
           <b>※Cookie を削除した場合，再度サインインが必要です．トークンを忘れると情報の更新／削除ができなくなります．</b>
         </p>
+      </section>
+
+      <section id="update">
+        <h2 style="margin-top: 0;">情報更新</h2>
+        <div class="form">
+          Twitter アカウント（あれば）<br/>
+          <input type="text" id="update-twitter-input" />
+        </div>
+        <div class="form">
+          卒論の目標<br/>
+          <input type="number" id="update-goal-input" value="40"/> ページ
+        </div>
+        <div class="form">
+          ひとこと ／ 終わったらやりたいこと<br/>
+          <textarea type="text" id="update-comment-input" cols="30" rows="3"></textarea>
+        </div>
+        <div class="form">
+          <button onclick="update()" id="update-button">
+            更新
+          </button>
+        </div>
       </section>
 
       <section id="next">
@@ -119,6 +147,7 @@ curl -X POST "https://sotsuron.yokohama.dev/api/progress?token=<span class="toke
           <pre>$success_cmd =
 "curl -X POST \"https://sotsuron.yokohama.dev/api/progress?token=<span class="token"></span>&pages=`pdfinfo main.pdf | grep Pages | grep -o '[0-9]'`\"";</pre>
         </code>
+
         <h3>Git を利用している場合</h3>
         <p>
           Git Hooks の post-commit を利用して，コミット時に自動で進捗を通知することができます．
@@ -127,6 +156,7 @@ curl -X POST "https://sotsuron.yokohama.dev/api/progress?token=<span class="toke
         <code>
           <pre>curl -X POST "https://sotsuron.yokohama.dev/api/progress?token=<span class="token"></span>&pages=`pdfinfo main.pdf | grep Pages | grep -o '[0-9]'`";</pre>
         </code>
+        
         <h3>Overleaf を利用している場合</h3>
         <p>拡張機能を準備中．</p>
       </section>
