@@ -85,6 +85,7 @@ app.get("/", async (c) => {
   return c.html(
     <html>
       <head>
+        <meta charset="utf-8" />
         <title>卒論進捗</title>
         <script src="script.js"></script>
         <link rel="stylesheet" href="style.css" />
