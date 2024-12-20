@@ -145,7 +145,7 @@ curl -X POST "https://sotsuron.yokohama.dev/api/progress?token=<span class="toke
         </p>
         <code>
           <pre>$success_cmd =
-"curl -X POST \"https://sotsuron.yokohama.dev/api/progress?token=<span class="token"></span>&pages=`pdfinfo main.pdf | grep Pages | grep -o '[0-9]'`\"";</pre>
+"curl -X POST \"https://sotsuron.yokohama.dev/api/progress?token=<span class="token"></span>&pages=`pdfinfo main.pdf | grep Pages | sed -e 's/[^0-9]//g'`\"";</pre>
         </code>
 
         <h3>Git を利用している場合</h3>
@@ -154,7 +154,7 @@ curl -X POST "https://sotsuron.yokohama.dev/api/progress?token=<span class="toke
           <code class="inline-code">.git/hooks/post-commit</code> に実行権限を付与した上で，以下の記述を追加します．
         </p>
         <code>
-          <pre>curl -X POST "https://sotsuron.yokohama.dev/api/progress?token=<span class="token"></span>&pages=`pdfinfo main.pdf | grep Pages | grep -o '[0-9]'`";</pre>
+          <pre>curl -X POST "https://sotsuron.yokohama.dev/api/progress?token=<span class="token"></span>&pages=`pdfinfo main.pdf | grep Pages | sed -e 's/[^0-9]//g'`";</pre>
         </code>
         
         <h3>Overleaf を利用している場合</h3>

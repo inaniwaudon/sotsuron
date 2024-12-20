@@ -19,4 +19,4 @@ CREATE TABLE progress (
   pages INTEGER NOT NULL,
   created_at TEXT NOT NULL DEFAULT (DATETIME('now', 'localtime')),
   FOREIGN KEY (user_id) REFERENCES user(id) ON UPDATE SET NULL
-)
+);
